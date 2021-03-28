@@ -1,4 +1,5 @@
 import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import { StocksService } from './stocks.service';
 
 @WebSocketGateway()
 export class StocksGateway {
