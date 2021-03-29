@@ -5,15 +5,8 @@ import { StockModel } from '../models/stock.model';
 export class StocksService {
   stocks: StockModel[] = [];
 
-  add(
-    id: string,
-    name: string,
-    description: string,
-    price: number,
-  ): StockModel {
-    const stock: StockModel = { id, name, description, price };
+  add(stock: StockModel): void {
     this.stocks.push(stock);
-    return stock;
   }
 
   get(id: string): StockModel {
@@ -36,8 +29,7 @@ export class StocksService {
     return stock;
   }
 
-  delete(id: string): StockModel[] {
+  delete(id: string): void {
     this.stocks = this.stocks.filter((s) => s.id !== id);
-    return this.stocks;
   }
 }

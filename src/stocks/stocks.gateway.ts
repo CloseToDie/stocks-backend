@@ -1,9 +1,18 @@
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { StocksService } from './shared/services/stocks.service';
-import { Socket } from "socket.io";
+import { Socket } from 'socket.io';
+import { StockModel } from './shared/models/stock.model';
 
 @WebSocketGateway()
-export class StocksGateway {
+export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private stocksService: StocksService) {}
   @WebSocketServer() server;
 
@@ -26,8 +35,9 @@ export class StocksGateway {
     @MessageBody() description: string,
     @MessageBody() price: number,
   ): void {
-    const stock = this.stocksService.add(client.id, name, description, price);
-    this.server.emit('stock', stock);
+    const stock: StockModel = { id: client.id, name, description, price };
+    this.stocksService.add(stock);
+    this.server.emit('stocks', this.stocksService.getAll());
   }
 
   @SubscribeMessage('increment')
@@ -40,5 +50,14 @@ export class StocksGateway {
   handleDecrement(@MessageBody() id: string): void {
     const stock = this.stocksService.decrement(id);
     this.server.emit('stock', stock);
+  }
+
+  handleConnection(client: Socket, ...args: any[]): any {
+    console.log('Client Connect', client.id);
+    client.emit('stocks', this.stocksService.getAll());
+  }
+
+  handleDisconnect(client: Socket): any {
+    console.log('Client Disconnect', client.id);
   }
 }
