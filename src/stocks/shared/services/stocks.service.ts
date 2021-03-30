@@ -3,7 +3,9 @@ import { StockModel } from '../models/stock.model';
 
 @Injectable()
 export class StocksService {
-  stocks: StockModel[] = [];
+  stocks: StockModel[] = [
+    { id: '1', name: 'APPLE', description: 'Apple Stock', price: 2000 },
+  ];
 
   add(stock: StockModel): void {
     this.stocks.push(stock);

@@ -10,6 +10,8 @@ import {
 import { StocksService } from './shared/services/stocks.service';
 import { Socket } from 'socket.io';
 import { StockModel } from './shared/models/stock.model';
+import { AddStockDto } from './shared/dto/addStock.dto';
+import { uuid } from 'uuidv4';
 
 @WebSocketGateway()
 export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -31,25 +33,28 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('add')
   handleAdd(
     @ConnectedSocket() client: Socket,
-    @MessageBody() name: string,
-    @MessageBody() description: string,
-    @MessageBody() price: number,
+    @MessageBody() stock: AddStockDto,
   ): void {
-    const stock: StockModel = { id: client.id, name, description, price };
-    this.stocksService.add(stock);
+    const addedStock: StockModel = {
+      id: uuid(),
+      name: stock.name,
+      description: stock.description,
+      price: stock.price,
+    };
+    this.stocksService.add(addedStock);
     this.server.emit('stocks', this.stocksService.getAll());
   }
 
   @SubscribeMessage('increment')
   handleIncrement(@MessageBody() id: string): void {
     const stock = this.stocksService.increment(id);
-    this.server.emit('stock', stock);
+    this.server.emit('stocks', this.stocksService.getAll());
   }
 
   @SubscribeMessage('decrement')
   handleDecrement(@MessageBody() id: string): void {
     const stock = this.stocksService.decrement(id);
-    this.server.emit('stock', stock);
+    this.server.emit('stocks', this.stocksService.getAll());
   }
 
   handleConnection(client: Socket, ...args: any[]): any {
